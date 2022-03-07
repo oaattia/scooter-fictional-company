@@ -25,12 +25,12 @@ class Location
     /**
      * @ORM\Column(type="integer")
      */
-    private $x;
+    private $longitude;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $y;
+    private $latitude;
 
     /**
      * @ORM\ManyToOne(targetEntity=Scooter::class, inversedBy="locations")
@@ -54,26 +54,26 @@ class Location
         return $this;
     }
 
-    public function getX(): ?int
+    public function getLongitude(): ?int
     {
-        return $this->x;
+        return $this->longitude;
     }
 
-    public function setX(int $x): self
+    public function setLongitude(int $longitude): self
     {
-        $this->x = $x;
+        $this->longitude = $longitude;
 
         return $this;
     }
 
-    public function getY(): ?int
+    public function getLatitude(): ?int
     {
-        return $this->y;
+        return $this->latitude;
     }
 
-    public function setY(int $y): self
+    public function setLatitude(int $latitude): self
     {
-        $this->y = $y;
+        $this->latitude = $latitude;
 
         return $this;
     }
