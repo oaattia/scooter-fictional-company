@@ -5,10 +5,8 @@ namespace App\Response;
 
 use OpenApi\Annotations\Property;
 use App\Model\Scooter;
-use Nelmio\ApiDocBundle\Annotation\Model;
-use OpenApi\Annotations as OA;
 
-class ScootersResponse
+class ScootersResponse extends Success
 {
     /**
      * @var Scooter[]
