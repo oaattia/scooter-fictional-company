@@ -64,13 +64,20 @@ class ScooterRepository extends ServiceEntityRepository
 
 
 
-    public function getScootersMaxLimit(int $limit, int $offset = 0): array
+    public function getScootersMaxLimit(?bool $status, int $limit, int $offset = 0): array
     {
-        return $this->createQueryBuilder('sc')
+        $query = $this->createQueryBuilder('sc')
             ->select('sc')
             ->setMaxResults($limit)
-            ->setFirstResult($offset)
-            ->getQuery()
+            ->setFirstResult($offset);
+
+
+        if ($status !== null) {
+            $query->where('sc.status = :status');
+            $query->setParameter('status', (int)$status);
+        }
+
+        return $query->getQuery()
             ->getResult();
     }
 }

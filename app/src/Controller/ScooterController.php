@@ -31,6 +31,7 @@ class ScooterController extends AbstractController
      *
      * @OA\Parameter(name="limit", in="query", description="max limit number of returned items")
      * @OA\Parameter(name="offset", in="query", description="offset of returned items")
+     * @OA\Parameter(name="status", in="query", description="filter the scooter by status, 0 not occupied, 1 occuppied")
      *
      * @OA\Response(response="404", description="Not found",
      *     @OA\Schema(ref=@Model(type=Error::Class))
@@ -49,8 +50,9 @@ class ScooterController extends AbstractController
     {
         $limit = $request->query->getInt('limit', self::LIMIT);
         $offset = $request->query->getInt('offset');
+        $status = $request->query->get('status');
 
-        $scooters = $repository->getScootersMaxLimit($limit, $offset);
+        $scooters = $repository->getScootersMaxLimit($status, $limit, $offset);
 
         if (empty($scooters)) {
             return new JsonResponse(new Error(ErrorCode::ERROR_GENERAL, 'No scooters found!'), Response::HTTP_NOT_FOUND);
@@ -96,8 +98,7 @@ class ScooterController extends AbstractController
             /** @var ScooterRequest $scooterRequest */
             $scooterRequest = $serializer->deserialize($request->getContent(), ScooterRequest::class, 'json');
         } catch (RuntimeException $exception) {
-            return new JsonResponse(new Error(ErrorCode::ERROR_INTERNAL_SERVER,
-                $exception->getMessage()), Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(new Error(ErrorCode::ERROR_INTERNAL_SERVER, $exception->getMessage()), Response::HTTP_BAD_REQUEST);
         }
 
         $validationErrors = $validator->validate($scooterRequest);
