@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Location;
 use App\Model\Error;
 use App\Repository\ScooterRepository;
 use App\Response\ErrorCode;
@@ -22,9 +23,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ScooterController extends AbstractController
 {
+    const LIMIT = 20;
+
     /**
      * List all scooters
      * @Route("/scooters", methods={"GET"})
+     *
+     * @OA\Parameter(name="limit", in="query", description="max limit number of returned items")
+     * @OA\Parameter(name="offset", in="query", description="offset of returned items")
      *
      * @OA\Response(response="404", description="Not found",
      *     @OA\Schema(ref=@Model(type=Error::Class))
@@ -39,9 +45,12 @@ class ScooterController extends AbstractController
      *     )
      * )
      */
-    public function getScooterAction(ScooterRepository $repository, SerializerInterface $serializer): Response
+    public function getScooterAction(Request $request, ScooterRepository $repository, SerializerInterface $serializer): Response
     {
-        $scooters = $repository->findAll();
+        $limit = $request->query->getInt('limit', self::LIMIT);
+        $offset = $request->query->getInt('offset');
+
+        $scooters = $repository->getScootersMaxLimit($limit, $offset);
 
         if (empty($scooters)) {
             return new JsonResponse(new Error(ErrorCode::ERROR_GENERAL, 'No scooters found!'), Response::HTTP_NOT_FOUND);
@@ -77,25 +86,43 @@ class ScooterController extends AbstractController
      *     @OA\Schema(ref=@Model(type=ScooterUpdatedResponse::class))
      * )
      *
-     * @OA\Response(response=400, description="Bad Request",
+     * @OA\Response(response=404, description="Not found scooter",
      *     @OA\Schema(ref=@Model(type=Error::Class))
      * )
      */
-    public function putScooterAction(Request $request, SerializerInterface $serializer, ValidatorInterface $validator): Response
+    public function putScooterAction(string $uuid, Request $request, SerializerInterface $serializer, ValidatorInterface $validator, ScooterRepository $repository): Response
     {
         try {
-            $content = $serializer->deserialize($request->getContent(),
-                ScooterRequest::class, 'json');
+            /** @var ScooterRequest $scooterRequest */
+            $scooterRequest = $serializer->deserialize($request->getContent(), ScooterRequest::class, 'json');
         } catch (RuntimeException $exception) {
-            return new JsonResponse(new Error(ErrorCode::ERROR_GENERAL,
+            return new JsonResponse(new Error(ErrorCode::ERROR_INTERNAL_SERVER,
                 $exception->getMessage()), Response::HTTP_BAD_REQUEST);
         }
 
-        $validationErrors = $validator->validate($content);
+        $validationErrors = $validator->validate($scooterRequest);
         if (\count($validationErrors) !== 0) {
             return new JsonResponse($serializer->serialize($validationErrors, 'json'), Response::HTTP_BAD_REQUEST, [], true);
         }
 
-        var_dump($content);die;
+
+        $scooter = $repository->findOneBy(['uuid' => $uuid]);
+
+        if(empty($scooter)) {
+            return new JsonResponse(new Error(ErrorCode::ERROR_GENERAL, sprintf('scooter uuid: (%s) not found!', $uuid)), Response::HTTP_NOT_FOUND);
+        }
+
+        $repository->update(
+            $scooter,
+            $scooterRequest->getStatus(),
+            $scooterRequest->getCurrentDateTime(),
+            $scooterRequest->getLongitude(),
+            $scooterRequest->getLatitude()
+        );
+
+        $scooterUpdatedResponse = new ScooterUpdatedResponse();
+        $scooterUpdatedResponse->setUuid($uuid);
+
+        return new JsonResponse($scooterUpdatedResponse);
     }
 }

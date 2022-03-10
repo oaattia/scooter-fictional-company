@@ -7,6 +7,7 @@ use JMS\Serializer\Annotation as Serializer;
 use OpenApi\Annotations\Property;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/** @Serializer\AccessType("public_method") */
 class ScooterRequest
 {
     /**
@@ -24,6 +25,7 @@ class ScooterRequest
      * @Serializer\Type("DateTime<'d-m-Y H:i:s'>")
      * @Assert\NotNull()
      * @Assert\DateTime()
+     * @Assert\GreaterThan(value="now")
      */
     private $currentDateTime;
 
@@ -42,4 +44,44 @@ class ScooterRequest
      * @Assert\Type("int")
      */
     private $latitude;
+
+    public function getStatus(): bool
+    {
+        return $this->status;
+    }
+
+    public function setStatus(bool $status): void
+    {
+        $this->status = $status;
+    }
+
+    public function getCurrentDateTime(): \DateTime
+    {
+        return $this->currentDateTime;
+    }
+
+    public function setCurrentDateTime(\DateTime $currentDateTime): void
+    {
+        $this->currentDateTime = $currentDateTime;
+    }
+
+    public function getLongitude()
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude($longitude): void
+    {
+        $this->longitude = $longitude;
+    }
+
+    public function getLatitude()
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude($latitude): void
+    {
+        $this->latitude = $latitude;
+    }
 }

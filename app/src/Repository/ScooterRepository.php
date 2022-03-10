@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Location;
 use App\Entity\Scooter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -43,5 +44,33 @@ class ScooterRepository extends ServiceEntityRepository
         if ($flush) {
             $this->_em->flush();
         }
+    }
+
+    public function update(Scooter $scooter, bool $status, \DateTime $dateTime, int $longitude, int $latitude): void
+    {
+        $scooter->setStatus($status);
+
+        $location = new Location();
+        $location->setDateTime($dateTime);
+        $location->setLongitude($longitude);
+        $location->setLatitude($latitude);
+        $scooter->addLocation($location);
+
+        $this->_em->persist($location);
+        $this->_em->persist($scooter);
+
+        $this->_em->flush();
+    }
+
+
+
+    public function getScootersMaxLimit(int $limit, int $offset = 0): array
+    {
+        return $this->createQueryBuilder('sc')
+            ->select('sc')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
     }
 }
