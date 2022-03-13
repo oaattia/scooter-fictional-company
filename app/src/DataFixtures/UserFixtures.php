@@ -18,6 +18,7 @@ class UserFixtures extends Fixture
         $user1->setEmail($faker->email);
         $user1->setFirstname($faker->firstName);
         $user1->setLastname($faker->lastName);
+        $user1->setUsername($faker->userName);
 
 
         $user2 = new User();
@@ -25,6 +26,7 @@ class UserFixtures extends Fixture
         $user2->setEmail($faker->email);
         $user2->setFirstname($faker->firstName);
         $user2->setLastname($faker->lastName);
+        $user2->setUsername($faker->userName);
 
 
         $manager->persist($user1);
